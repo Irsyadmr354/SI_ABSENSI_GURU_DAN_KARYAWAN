@@ -1,78 +1,77 @@
 @extends('layouts.app')
 
-@section('title', 'Data Jabatan')
-@section('page_title', 'Manajemen Data Jabatan')
+@section('title', 'Data Jabatan - SI Absensi')
+@section('page_title', 'Struktur Jabatan')
 
 @section('content')
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-    <div>
-        <h2 class="text-lg md:text-xl font-bold text-black">Data Jabatan</h2>
-        <p class="text-xs md:text-sm text-gray-600 mt-1">Kelola data jabatan untuk guru dan karyawan</p>
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-xl font-bold text-zinc-900">Struktur Jabatan</h1>
+            <p class="text-sm text-zinc-500 mt-1">Kelola hierarki dan posisi dalam organisasi.</p>
+        </div>
+        <a href="{{ route('admin.jabatan.create') }}" 
+           class="inline-flex items-center justify-center px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-medium hover:bg-black transition-all shadow-sm">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Tambah Jabatan
+        </a>
     </div>
-    <a href="{{ route('admin.jabatan.create') }}" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 font-medium text-sm md:text-base w-full sm:w-auto text-center">
-        + Tambah Jabatan
-    </a>
-</div>
 
-@if($jabatan->count() > 0)
-    <div class="mb-4 text-sm text-gray-600">
-        Total <strong>{{ $jabatan->total() }}</strong> jabatan terdaftar dalam sistem
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 bg-white border border-zinc-200 rounded-2xl shadow-sm">
+            <p class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Total Posisi</p>
+            <p class="text-2xl font-bold text-zinc-900">{{ $jabatan->total() }}</p>
+        </div>
     </div>
-@endif
 
-<div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Nama Jabatan</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Deskripsi</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Aksi</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            @forelse($jabatan as $j)
-            <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-black">{{ $j->nama_jabatan }}</div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="text-sm text-black">{{ Str::limit($j->deskripsi, 100) ?: '-' }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex items-center space-x-3">
-                        <a href="{{ route('admin.jabatan.edit', $j) }}" class="text-black hover:text-gray-700 hover:underline">Edit</a>
-                        <span class="text-gray-300">|</span>
-                        <form action="{{ route('admin.jabatan.destroy', $j) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jabatan {{ $j->nama_jabatan }}? Tindakan ini tidak dapat dibatalkan.')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-800 hover:underline">Hapus</button>
-                        </form>
+    <!-- Data Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @forelse($jabatan as $j)
+            <div class="group bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <a href="{{ route('admin.jabatan.edit', $j) }}" class="p-1.5 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </a>
+                    <form action="{{ route('admin.jabatan.destroy', $j) }}" method="POST" onsubmit="return confirm('Hapus jabatan ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mb-4">
+                    <div class="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center text-zinc-900 border border-zinc-200 font-bold text-lg mb-4">
+                        {{ substr($j->nama_jabatan, 0, 1) }}
                     </div>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="3" class="px-6 py-12 text-center">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada data jabatan</h3>
-                    <p class="mt-1 text-sm text-gray-500">Mulai dengan menambahkan data jabatan baru.</p>
-                    <div class="mt-6">
-                        <a href="{{ route('admin.jabatan.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800">
-                            Tambah Jabatan Pertama
-                        </a>
-                    </div>
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                    <h3 class="text-lg font-bold text-zinc-900 mb-1">{{ $j->nama_jabatan }}</h3>
+                    <p class="text-sm text-zinc-500 line-clamp-2 min-h-[2.5em]">
+                        {{ $j->deskripsi ?: 'Tidak ada deskripsi.' }}
+                    </p>
+                </div>
 
-@if($jabatan->hasPages())
-    <div class="mt-4">
-        {{ $jabatan->links() }}
+                <div class="pt-4 border-t border-zinc-100 flex items-center justify-between">
+                    <span class="text-xs font-medium text-zinc-400">ID: {{ $j->id }}</span>
+                    <span class="text-xs font-bold text-zinc-900 uppercase tracking-wider">Detail Posisi</span>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-12 text-center bg-zinc-50 border border-zinc-200 border-dashed rounded-2xl">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-zinc-100">
+                    <svg class="w-8 h-8 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </div>
+                <h4 class="text-lg font-bold text-zinc-900">Belum Ada Data</h4>
+                <p class="text-sm text-zinc-500 mt-1">Silakan tambahkan jabatan baru.</p>
+            </div>
+        @endforelse
     </div>
-@endif
+
+    @if($jabatan->hasPages())
+        <div class="flex justify-center pt-6">
+            {{ $jabatan->links() }}
+        </div>
+    @endif
+</div>
 @endsection

@@ -37,9 +37,7 @@ class RegisterController extends Controller
             'is_active' => false, // Default nonaktif, harus diaktifkan admin
         ]);
 
-        Auth::login($user);
-
-        return $this->redirectBasedOnRole();
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Akun Anda sedang menunggu persetujuan administrator.');
     }
 
     protected function redirectBasedOnRole()

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             JamKerjaSeeder::class,
             GuruSeeder::class,
             KaryawanSeeder::class,
+            AbsensiSeeder::class,
         ]);
     }
 }

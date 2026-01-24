@@ -1,191 +1,205 @@
 @extends('layouts.app')
 
-@section('title', 'Absensi')
-@section('page_title', 'Absensi Online')
+@section('title', 'Absensi Karyawan - SI Absensi')
+@section('page_title', 'Punch Terminal')
 
 @section('content')
-<div class="space-y-6">
-    <!-- Informasi Jam Kerja -->
-    @if($jamKerja)
-    <x-card>
-        <div class="mb-4">
-            <h3 class="text-lg font-semibold text-black">Informasi Jam Kerja</h3>
-            <p class="text-sm text-gray-600">Jam kerja yang berlaku untuk absensi</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <p class="text-xs text-gray-600 mb-1">Jam Masuk</p>
-                    <p class="text-lg font-semibold text-black">{{ $jamKerja->jam_masuk }}</p>
+<div class="space-y-8">
+    <!-- Header with Live Sync -->
+    <div class="bg-zinc-900 text-white rounded-2xl p-8 shadow-lg relative overflow-hidden">
+        <div class="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            <div class="space-y-2">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-semibold tracking-wide">Terminal Operasional Aktif</span>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-600 mb-1">Jam Pulang</p>
-                    <p class="text-lg font-semibold text-black">{{ $jamKerja->jam_pulang }}</p>
-                </div>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight">
+                    {{ now()->isoFormat('dddd, D MMMM Y') }}
+                </h2>
             </div>
-            @if($jamKerja->toleransi_keterlambatan > 0)
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <p class="text-xs text-gray-600 mb-1">Toleransi Keterlambatan</p>
-                    <p class="text-sm text-black">{{ $jamKerja->toleransi_keterlambatan }} menit</p>
-                </div>
-            @endif
-        </div>
-    </x-card>
-    @endif
 
-    <!-- Absensi Hari Ini -->
-    <x-card>
-        <div class="mb-4">
-            <h3 class="text-lg font-semibold text-black">Absensi Hari Ini</h3>
-            <p class="text-sm text-gray-600">Tanggal: {{ now()->format('d/m/Y') }} - {{ now()->format('l') }}</p>
+            <div class="text-right hidden sm:block">
+                <p class="text-xs font-semibold tracking-widest text-zinc-400 mb-1 uppercase">Waktu Server</p>
+                <p class="text-5xl font-mono font-bold tracking-tight" id="karyawan-clock">
+                    {{ now()->format('H:i') }}<span class="text-zinc-500 text-3xl">:{{ now()->format('s') }}</span>
+                </p>
+            </div>
         </div>
-        
-        @if($absensiHariIni && $absensiHariIni->jam_masuk)
-            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-                <div class="mb-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm font-medium text-gray-700">Status:</span>
-                        <span class="px-3 py-1 rounded bg-green-100 text-green-800 font-medium">
-                            Sudah Check-In
-                        </span>
+
+        <!-- Decoration -->
+        <div class="absolute -right-20 -bottom-32 opacity-10 pointer-events-none">
+            <svg class="w-96 h-96" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Main Interaction Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <!-- Punch Section (Important) -->
+        <div class="xl:col-span-2 space-y-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 border border-zinc-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 113.536 3.536L12 17.232l-3.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-zinc-900">Terminal Absensi</h3>
+            </div>
+
+            <div class="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-zinc-50 border-b border-zinc-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1">Konfigurasi Shift</p>
+                        <h4 class="text-lg font-bold text-zinc-900">
+                            {{ $jamKerja ? $jamKerja->nama : 'Jadwal Reguler' }}
+                        </h4>
                     </div>
-                    <div class="bg-white rounded-lg p-4 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Jam Masuk:</span>
-                            <span class="text-lg font-bold text-black">{{ $absensiHariIni->jam_masuk }}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="px-4 py-2 border border-zinc-200 rounded-lg bg-white shadow-sm">
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider text-center mb-0.5">Masuk</p>
+                            <p class="font-mono font-bold text-zinc-900 text-center">
+                                {{ $jamKerja ? \Carbon\Carbon::parse($jamKerja->jam_masuk)->format('H:i') : '--:--' }}
+                            </p>
                         </div>
-                        
-                        @if($absensiHariIni->terlambat)
-                            <div class="flex items-center justify-between pt-2 border-t border-gray-200">
-                                <span class="text-sm text-gray-600">Keterlambatan:</span>
-                                <span class="text-sm font-semibold text-red-600">{{ $absensiHariIni->terlambat }} menit</span>
-                            </div>
-                        @endif
-                        
-                        @if($absensiHariIni->jam_pulang)
-                            <div class="flex items-center justify-between pt-2 border-t border-gray-200">
-                                <span class="text-sm text-gray-600">Jam Pulang:</span>
-                                <span class="text-lg font-bold text-black">{{ $absensiHariIni->jam_pulang }}</span>
-                            </div>
-                            <div class="pt-3 mt-3 border-t-2 border-green-200">
-                                <p class="text-sm text-green-800 text-center font-medium">✓ Absensi lengkap untuk hari ini</p>
-                            </div>
-                        @else
-                            <div class="pt-4 mt-3 border-t border-gray-200">
-                                <p class="text-sm text-gray-600 mb-3">Anda belum melakukan check-out. Silakan lakukan check-out jika waktu kerja Anda sudah selesai.</p>
-                                <form action="{{ route('karyawan.absensi.check-out') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="w-full bg-black text-white px-6 py-3 rounded hover:bg-gray-800 font-medium">
-                                        Check Out Sekarang
-                                    </button>
-                                </form>
-                                <p class="text-xs text-gray-500 mt-2 text-center">Waktu saat ini: {{ now()->format('H:i:s') }}</p>
-                            </div>
-                        @endif
+                        <div class="px-4 py-2 border border-zinc-200 rounded-lg bg-white shadow-sm">
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider text-center mb-0.5">Pulang</p>
+                            <p class="font-mono font-bold text-zinc-900 text-center">
+                                {{ $jamKerja ? \Carbon\Carbon::parse($jamKerja->jam_pulang)->format('H:i') : '--:--' }}
+                            </p>
+                        </div>
                     </div>
                 </div>
+
+                <div class="p-8">
+                    @if($absensiHariIni && $absensiHariIni->jam_masuk)
+                        <div class="space-y-8">
+                            <!-- Status Dashboard -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="p-6 border border-zinc-200 rounded-2xl bg-zinc-900 text-white relative overflow-hidden shadow-md group">
+                                    <div class="relative z-10">
+                                        <p class="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Login Time</p>
+                                        <p class="text-3xl font-mono font-bold">
+                                            {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }}
+                                        </p>
+                                        @if($absensiHariIni->terlambat)
+                                            <div class="mt-3 inline-flex items-center px-2.5 py-1 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg text-xs font-bold uppercase tracking-wide">
+                                                Terlambat {{ $absensiHariIni->terlambat }} Menit
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="p-6 border border-zinc-200 rounded-2xl bg-white text-zinc-900 relative overflow-hidden shadow-sm">
+                                    <p class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Logout Time</p>
+                                    <p class="text-3xl font-mono font-bold">
+                                        {{ $absensiHariIni->jam_pulang ? \Carbon\Carbon::parse($absensiHariIni->jam_pulang)->format('H:i') : '--:--' }}
+                                    </p>
+                                    @if(!$absensiHariIni->jam_pulang)
+                                        <div class="mt-3 inline-flex items-center px-2.5 py-1 bg-zinc-100 rounded-lg text-xs font-bold uppercase text-zinc-500">
+                                            Shift Currently Active
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if(!$absensiHariIni->jam_pulang)
+                                <div class="pt-6 border-t border-zinc-100">
+                                    <form action="{{ route('karyawan.absensi.check-out') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-full py-4 bg-zinc-900 text-white rounded-xl font-bold text-lg hover:bg-black transition-all shadow-lg hover:shadow-xl active:scale-[0.99] flex items-center justify-center gap-3 group">
+                                            <span>CHECK OUT SHIFT</span>
+                                            <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            @else
+                                <div class="p-6 bg-zinc-50 border border-zinc-200 rounded-2xl text-center">
+                                    <div class="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                                        <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-zinc-900">Log Locked</h4>
+                                    <p class="text-sm text-zinc-500 mt-1">Kehadiran operasional Anda hari ini telah diverifikasi.</p>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <div class="py-12 text-center">
+                            <div class="mb-8">
+                                <div class="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-200">
+                                    <svg class="w-10 h-10 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <h4 class="text-2xl font-bold text-zinc-900 mb-2">Terminal Akses</h4>
+                                <p class="text-zinc-500 text-sm max-w-sm mx-auto">Klik tombol di bawah untuk mencatat waktu mulai kerja Anda pada sistem operasional.</p>
+                            </div>
+
+                            <form action="{{ route('karyawan.absensi.check-in') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full max-w-md mx-auto py-4 bg-zinc-900 text-white rounded-xl font-bold text-lg hover:bg-black transition-all shadow-lg hover:shadow-xl active:scale-[0.99] flex items-center justify-center gap-3">
+                                    <span>CHECK IN NOW</span>
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+                </div>
             </div>
-        @else
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <div class="text-center">
-                    <p class="text-lg font-semibold text-black mb-2">Belum Ada Check-In Hari Ini</p>
-                    <p class="text-sm text-gray-600 mb-4">Silakan lakukan check-in untuk mencatat kehadiran Anda</p>
-                    
-                    <div class="bg-white rounded-lg p-4 mb-4">
-                        <p class="text-xs text-gray-600 mb-2">Waktu saat ini:</p>
-                        <p class="text-2xl font-bold text-black mb-2">{{ now()->format('H:i:s') }}</p>
-                        <p class="text-xs text-gray-500">{{ now()->format('d/m/Y') }}</p>
+        </div>
+
+        <!-- Request Leave Section -->
+        <div class="space-y-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 border border-zinc-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-zinc-900">Pengajuan Izin</h3>
+            </div>
+
+            <div class="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+                <form action="{{ route('karyawan.absensi.ajukan-izin') }}" method="POST" class="space-y-5">
+                    @csrf
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Tanggal</label>
+                        <input type="date" name="tanggal" required
+                            class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all font-medium text-sm">
                     </div>
-                    
-                    <form action="{{ route('karyawan.absensi.check-in') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="bg-black text-white px-8 py-3 rounded hover:bg-gray-800 font-medium text-lg">
-                            Check In Sekarang
-                        </button>
-                    </form>
-                    <p class="text-xs text-gray-500 mt-3">Pastikan Anda melakukan check-in sesuai jam kerja yang berlaku</p>
-                </div>
-            </div>
-        @endif
-    </x-card>
 
-    <!-- Pengajuan Izin/Cuti -->
-    <x-card>
-        <div class="mb-4">
-            <h3 class="text-lg font-semibold text-black">Ajukan Izin / Cuti / Sakit</h3>
-            <p class="text-sm text-gray-600">Gunakan form ini untuk mengajukan izin, cuti, atau sakit</p>
-        </div>
-        
-        <form action="{{ route('karyawan.absensi.ajukan-izin') }}" method="POST" class="space-y-4">
-            @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-black mb-1">
-                        Tanggal <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" name="tanggal" required 
-                           min="{{ date('Y-m-d') }}"
-                           value="{{ old('tanggal', date('Y-m-d')) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black">
-                    <p class="text-xs text-gray-500 mt-1">Pilih tanggal untuk izin/cuti/sakit</p>
-                    @error('tanggal') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Jenis Izin</label>
+                        <div class="relative">
+                            <select name="status" required class="w-full pl-4 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all appearance-none cursor-pointer font-medium text-sm">
+                                <option value="izin">IZIN / KEPERLUAN PRIBADI</option>
+                                <option value="sakit">SAKIT / KENDALA KESEHATAN</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-black mb-1">
-                        Jenis <span class="text-red-500">*</span>
-                    </label>
-                    <select name="status" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black">
-                        <option value="">Pilih Jenis</option>
-                        <option value="izin" {{ old('status') == 'izin' ? 'selected' : '' }}>Izin / Cuti</option>
-                        <option value="sakit" {{ old('status') == 'sakit' ? 'selected' : '' }}>Sakit</option>
-                    </select>
-                    <p class="text-xs text-gray-500 mt-1">Pilih jenis ketidakhadiran</p>
-                    @error('status') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-            </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Keterangan</label>
+                        <textarea name="keterangan" required rows="4" placeholder="Jelaskan alasan..."
+                            class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-transparent resize-none text-sm transition-all"></textarea>
+                    </div>
 
-            <div>
-                <label class="block text-sm font-medium text-black mb-1">
-                    Alasan / Keterangan <span class="text-red-500">*</span>
-                </label>
-                <textarea name="keterangan" required rows="3" 
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
-                          placeholder="Contoh: Izin cuti tahunan, Sakit demam, dll">{{ old('keterangan') }}</textarea>
-                <p class="text-xs text-gray-500 mt-1">Jelaskan alasan izin/cuti/sakit</p>
-                @error('keterangan') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
-            </div>
-
-            <div class="pt-2">
-                <button type="submit" class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 font-medium">
-                    Ajukan Izin/Cuti/Sakit
-                </button>
-            </div>
-        </form>
-    </x-card>
-
-    <!-- Petunjuk -->
-    <x-card>
-        <h3 class="text-lg font-semibold text-black mb-3">Petunjuk Absensi</h3>
-        <div class="space-y-2 text-sm text-gray-700">
-            <div class="flex items-start">
-                <span class="font-medium mr-2">1.</span>
-                <p>Lakukan check-in pada saat mulai bekerja sesuai jam kerja yang berlaku</p>
-            </div>
-            <div class="flex items-start">
-                <span class="font-medium mr-2">2.</span>
-                <p>Lakukan check-out pada saat selesai bekerja</p>
-            </div>
-            <div class="flex items-start">
-                <span class="font-medium mr-2">3.</span>
-                <p>Keterlambatan akan dihitung otomatis jika check-in melebihi jam masuk + toleransi</p>
-            </div>
-            <div class="flex items-start">
-                <span class="font-medium mr-2">4.</span>
-                <p>Untuk izin/cuti/sakit, gunakan form "Ajukan Izin" di atas (dapat diajukan sebelumnya)</p>
+                    <button type="submit" class="w-full py-2.5 bg-zinc-100 text-zinc-900 border border-zinc-200 rounded-xl font-bold text-sm hover:bg-zinc-200 transition-all hover:shadow-sm">
+                        Kirim Pengajuan
+                    </button>
+                </form>
             </div>
         </div>
-    </x-card>
+    </div>
 </div>
+
+<script>
+    setInterval(() => {
+        const clockElem = document.getElementById('karyawan-clock');
+        if (clockElem) {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            clockElem.innerHTML = `${h}:${m}<span class="text-zinc-500 text-3xl ml-1">:${s}</span>`;
+        }
+    }, 1000);
+</script>
 @endsection

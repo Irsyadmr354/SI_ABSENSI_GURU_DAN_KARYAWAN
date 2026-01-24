@@ -1,160 +1,157 @@
 @extends('layouts.app')
 
-@section('title', 'Data Absensi')
-@section('page_title', 'Manajemen Data Absensi')
+@section('title', 'Data Absensi - SI Absensi')
+@section('page_title', 'Monitoring Kehadiran')
 
 @section('content')
-<div class="mb-6">
-    <h2 class="text-lg md:text-xl font-bold text-black">Data Absensi</h2>
-    <p class="text-xs md:text-sm text-gray-600 mt-1">Lihat dan kelola seluruh data absensi guru dan karyawan</p>
-</div>
-
-<!-- Filter Form -->
-<x-card>
-    <div class="mb-4">
-        <h3 class="text-lg font-semibold text-black mb-1">Filter Pencarian</h3>
-        <p class="text-sm text-gray-600">Gunakan filter di bawah untuk mencari data absensi tertentu</p>
-    </div>
-    
-    <form method="GET" action="{{ route('admin.absensi.index') }}" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-black mb-1">Tanggal Dari</label>
-                <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black">
-                <p class="text-xs text-gray-500 mt-1">Pilih tanggal awal</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-black mb-1">Tanggal Sampai</label>
-                <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black">
-                <p class="text-xs text-gray-500 mt-1">Pilih tanggal akhir</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-black mb-1">Cari Nama</label>
-                <input type="text" name="nama" value="{{ request('nama') }}" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black" 
-                       placeholder="Masukkan nama...">
-                <p class="text-xs text-gray-500 mt-1">Cari berdasarkan nama pegawai</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-black mb-1">Filter Role</label>
-                <select name="role" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black">
-                    <option value="">Semua Role</option>
-                    <option value="guru" {{ request('role') == 'guru' ? 'selected' : '' }}>Guru</option>
-                    <option value="karyawan" {{ request('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Filter berdasarkan role</p>
-            </div>
-        </div>
-        <div class="flex flex-wrap gap-2">
-            <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 font-medium">
-                Terapkan Filter
-            </button>
-            <a href="{{ route('admin.absensi.index') }}" class="bg-gray-200 text-black px-4 py-2 rounded hover:bg-gray-300 font-medium">
-                Reset Filter
-            </a>
-            <a href="{{ route('admin.absensi.export-pdf') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 font-medium">
-                Export PDF
-            </a>
-            <a href="{{ route('admin.absensi.export-excel') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 font-medium">
-                Export Excel
-            </a>
-        </div>
-    </form>
-</x-card>
-
-<!-- Tabel Data -->
-<x-card>
-    <div class="mb-4 flex items-center justify-between">
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h3 class="text-lg font-semibold text-black">Data Absensi</h3>
-            @if($absensi->count() > 0)
-                <p class="text-sm text-gray-600 mt-1">Menampilkan {{ $absensi->count() }} dari {{ $absensi->total() }} data absensi</p>
-            @endif
+            <h1 class="text-xl font-bold text-zinc-900">Laporan Absensi</h1>
+            <p class="text-sm text-zinc-500 mt-1">Monitoring kehadiran seluruh pegawai secara real-time.</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ route('admin.absensi.export-pdf') }}" class="px-4 py-2 bg-white border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                PDF
+            </a>
+            <a href="{{ route('admin.absensi.export-excel') }}" class="px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-medium hover:bg-black transition-all flex items-center gap-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Excel
+            </a>
         </div>
     </div>
-    
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Tanggal</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Nama Pegawai</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Jam Masuk</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Jam Pulang</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Terlambat</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($absensi as $a)
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-black">{{ $a->tanggal->format('d/m/Y') }}</div>
-                        <div class="text-xs text-gray-500">{{ $a->tanggal->format('l') }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-black">{{ $a->user->name }}</div>
-                        <div class="text-xs text-gray-500">{{ $a->user->email }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                            {{ ucfirst($a->user->role) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-black">{{ $a->jam_masuk ?? '-' }}</div>
-                        @if(!$a->jam_masuk)
-                            <div class="text-xs text-gray-400">Belum check-in</div>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-black">{{ $a->jam_pulang ?? '-' }}</div>
-                        @if($a->jam_masuk && !$a->jam_pulang)
-                            <div class="text-xs text-yellow-600">Belum check-out</div>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $a->status == 'hadir' ? 'bg-green-100 text-green-800' : ($a->status == 'izin' ? 'bg-yellow-100 text-yellow-800' : ($a->status == 'sakit' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')) }}">
-                            {{ ucfirst($a->status) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($a->terlambat)
-                            <span class="text-sm font-medium text-red-600">{{ $a->terlambat }} menit</span>
-                        @else
-                            <span class="text-sm text-gray-400">-</span>
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="px-6 py-12 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada data absensi</h3>
-                        <p class="mt-1 text-sm text-gray-500">Tidak ada data absensi yang sesuai dengan filter Anda.</p>
-                        @if(request()->anyFilled(['tanggal_dari', 'tanggal_sampai', 'nama', 'role']))
-                            <div class="mt-6">
-                                <a href="{{ route('admin.absensi.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800">
-                                    Reset Filter
-                                </a>
-                            </div>
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</x-card>
 
-@if($absensi->hasPages())
-    <div class="mt-4">
-        {{ $absensi->links() }}
+    <!-- Filter Panel -->
+    <div class="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+        <form method="GET" action="{{ route('admin.absensi.index') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Dari Tanggal</label>
+                <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
+                    class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all font-medium text-sm">
+            </div>
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Sampai Tanggal</label>
+                <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
+                    class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all font-medium text-sm">
+            </div>
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Nama Pegawai</label>
+                <input type="text" name="nama" value="{{ request('nama') }}"
+                    class="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all font-medium text-sm placeholder-zinc-400"
+                    placeholder="Cari nama...">
+            </div>
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Filter Role</label>
+                <div class="relative">
+                    <select name="role" class="w-full pl-4 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all appearance-none cursor-pointer font-medium text-sm">
+                        <option value="">Semua Role</option>
+                        <option value="guru" {{ request('role') == 'guru' ? 'selected' : '' }}>Guru</option>
+                        <option value="karyawan" {{ request('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-4 flex justify-end gap-3 pt-2">
+                <a href="{{ route('admin.absensi.index') }}" class="px-6 py-2.5 bg-white border border-zinc-200 text-zinc-700 rounded-xl font-bold text-sm hover:bg-zinc-50 transition-all">
+                    Reset
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-zinc-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-all shadow-md">
+                    Terapkan Filter
+                </button>
+            </div>
+        </form>
     </div>
-@endif
+
+    <!-- Data Table -->
+    <div class="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-zinc-50 border-b border-zinc-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">Pegawai</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">Masuk</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">Pulang</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100">
+                    @forelse($absensi as $a)
+                        <tr class="hover:bg-zinc-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-semibold text-zinc-900">{{ $a->tanggal->format('d M') }}</span>
+                                    <span class="text-xs text-zinc-500">{{ $a->tanggal->isoFormat('dddd') }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 font-bold text-xs border border-zinc-200">
+                                        {{ substr($a->user->name, 0, 1) }}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-zinc-900">{{ $a->user->name }}</span>
+                                        <span class="text-xs text-zinc-500">{{ ucfirst($a->user->role) }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-sm font-mono text-zinc-600 bg-zinc-100 px-2 py-1 rounded">{{ $a->jam_masuk ?? '--:--' }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-sm font-mono text-zinc-600 bg-zinc-100 px-2 py-1 rounded">{{ $a->jam_pulang ?? '--:--' }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @php
+                                    $statusClasses = [
+                                        'hadir' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                                        'izin' => 'bg-blue-50 text-blue-700 border-blue-100',
+                                        'sakit' => 'bg-amber-50 text-amber-700 border-amber-100',
+                                        'alpha' => 'bg-red-50 text-red-700 border-red-100',
+                                    ];
+                                    $class = $statusClasses[$a->status] ?? 'bg-zinc-50 text-zinc-700 border-zinc-100';
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium border {{ $class }}">
+                                    {{ ucfirst($a->status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                @if($a->terlambat > 0)
+                                    <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded">
+                                        +{{ $a->terlambat }}m
+                                    </span>
+                                @elseif($a->status == 'hadir')
+                                    <span class="text-xs font-semibold text-emerald-600">On Time</span>
+                                @else
+                                    <span class="text-xs text-zinc-400">-</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="mx-auto w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                                </div>
+                                <p class="text-sm font-medium text-zinc-900">Data tidak ditemukan</p>
+                                <p class="text-xs text-zinc-500">Coba sesuaikan filter pencarian Anda.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if($absensi->hasPages())
+        <div class="flex justify-center pt-4">
+            {{ $absensi->links() }}
+        </div>
+    @endif
+</div>
 @endsection
