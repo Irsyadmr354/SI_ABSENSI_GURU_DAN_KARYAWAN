@@ -54,4 +54,27 @@ class AbsensiController extends Controller
         // This is a placeholder - actual implementation requires Laravel Excel package
         return redirect()->back()->with('info', 'Fitur export Excel akan segera tersedia.');
     }
+
+    public function terminal()
+    {
+        return view('admin.absensi.terminal');
+    }
+
+    public function getQrToken()
+    {
+        $user = auth()->user();
+        $token = \Illuminate\Support\Str::random(64);
+        
+        // Simpan token dengan user_id pembuatnya
+        // Valid 30 detik (cukup untuk scan)
+        \Illuminate\Support\Facades\Cache::put('attendance_qr_' . $token, [
+            'valid' => true,
+            'user_id' => $user->id
+        ], 30);
+
+        return response()->json([
+            'token' => $token,
+            'expires_in' => 30
+        ]);
+    }
 }

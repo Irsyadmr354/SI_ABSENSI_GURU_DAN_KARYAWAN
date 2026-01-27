@@ -25,6 +25,14 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
+Route::middleware('auth')->group(function() {
+    Route::get('/absensi/get-qr-token', [AdminAbsensiController::class, 'getQrToken'])->name('absensi.get-qr-token');
+});
+
+// Public routes for scanning (Middleware handles auth logic inside)
+Route::get('/absensi/scan-init/{token}', [App\Http\Controllers\AbsensiScanController::class, 'initScan'])->name('absensi.scan.init');
+Route::get('/absensi/scan-process/{token}', [App\Http\Controllers\AbsensiScanController::class, 'process'])->middleware('auth')->name('absensi.scan.process');
+
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function() {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -45,12 +53,25 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
 });
 
+// === SCAN ABSENSI ROUTES ===       
+// 1. Init: Force Logout if needed to ensure fresh login
+Route::get('/absensi/scan/{token}', [\App\Http\Controllers\AbsensiScanController::class, 'scanInit'])->name('absensi.scan');
+
+// 2. Process: Protected by Auth, processes the scan after login
+Route::get('/absensi/scan-process/{token}', [\App\Http\Controllers\AbsensiScanController::class, 'scanProcess'])
+    ->middleware('auth')
+    ->name('absensi.scan-process');
+
+// 3. Demo Reset Route
+Route::post('/absensi/demo-reset', [\App\Http\Controllers\AbsensiScanController::class, 'demoReset'])
+    ->middleware('auth')
+    ->name('absensi.demo-reset');
+
 // Guru routes
 Route::prefix('guru')->middleware(['auth', 'guru'])->group(function() {
     Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('guru.dashboard');
     Route::get('/absensi', [GuruAbsensiController::class, 'index'])->name('guru.absensi.index');
-    Route::post('/absensi/check-in', [GuruAbsensiController::class, 'checkIn'])->name('guru.absensi.check-in');
-    Route::post('/absensi/check-out', [GuruAbsensiController::class, 'checkOut'])->name('guru.absensi.check-out');
+    // Absensi actions handled by QR Scan now
     Route::post('/absensi/ajukan-izin', [GuruAbsensiController::class, 'ajukanIzin'])->name('guru.absensi.ajukan-izin');
     Route::get('/absensi/riwayat', [GuruAbsensiController::class, 'riwayat'])->name('guru.absensi.riwayat');
 });
@@ -59,8 +80,7 @@ Route::prefix('guru')->middleware(['auth', 'guru'])->group(function() {
 Route::prefix('karyawan')->middleware(['auth', 'karyawan'])->group(function() {
     Route::get('/dashboard', [KaryawanDashboardController::class, 'index'])->name('karyawan.dashboard');
     Route::get('/absensi', [KaryawanAbsensiController::class, 'index'])->name('karyawan.absensi.index');
-    Route::post('/absensi/check-in', [KaryawanAbsensiController::class, 'checkIn'])->name('karyawan.absensi.check-in');
-    Route::post('/absensi/check-out', [KaryawanAbsensiController::class, 'checkOut'])->name('karyawan.absensi.check-out');
+    // Absensi actions handled by QR Scan now
     Route::post('/absensi/ajukan-izin', [KaryawanAbsensiController::class, 'ajukanIzin'])->name('karyawan.absensi.ajukan-izin');
     Route::get('/absensi/riwayat', [KaryawanAbsensiController::class, 'riwayat'])->name('karyawan.absensi.riwayat');
 });

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+ @extends('layouts.app')
 
 @section('title', 'Absensi Online - SI Absensi')
 @section('page_title', 'Terminal Kehadiran')
@@ -82,7 +82,7 @@
                                         </p>
                                         @if($absensiHariIni->terlambat)
                                             <div class="mt-3 inline-flex items-center px-2.5 py-1 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg text-xs font-bold uppercase tracking-wide">
-                                                Terlambat {{ $absensiHariIni->terlambat }} Menit
+                                                {{ $absensiHariIni->terlambat_deskripsi }}
                                             </div>
                                         @endif
                                     </div>
@@ -109,14 +109,25 @@
                             </div>
 
                             @if(!$absensiHariIni->jam_pulang)
-                                <div class="pt-6 border-t border-zinc-100">
-                                    <form action="{{ route('guru.absensi.check-out') }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="w-full py-4 bg-zinc-900 text-white rounded-xl font-bold text-lg hover:bg-black transition-all shadow-lg hover:shadow-xl active:scale-[0.99] flex items-center justify-center gap-3 group">
-                                            <span>CHECK OUT SEKARANG</span>
-                                            <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
-                                        </button>
-                                    </form>
+                                <div class="p-6 bg-zinc-50 border border-zinc-200 rounded-2xl text-center relative overflow-hidden group">
+                                    <h4 class="text-lg font-bold text-zinc-900 mb-4">Scan untuk Check-Out</h4>
+                                    
+                                    <div class="flex justify-center mb-4">
+                                        <div class="bg-white p-4 rounded-xl shadow-sm border border-zinc-200 relative">
+                                            <div id="qrcode-out"></div>
+                                            <!-- Loading Overlay -->
+                                            <div id="loading-overlay-out" class="absolute inset-0 bg-white/90 flex items-center justify-center z-10 transition-opacity duration-300">
+                                                <div class="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-xs text-zinc-500 max-w-xs mx-auto">Scan QR Code ini menggunakan kamera HP Anda untuk melakukan absensi keluar.</p>
+                                    
+                                    <!-- Timer Bar -->
+                                    <div class="absolute bottom-0 left-0 w-full h-1 bg-zinc-200">
+                                        <div id="timer-bar-out" class="h-full bg-emerald-500 w-full transition-all ease-linear duration-1000"></div>
+                                    </div>
                                 </div>
                             @else
                                 <div class="p-6 bg-zinc-50 border border-zinc-200 rounded-2xl text-center">
@@ -130,21 +141,30 @@
                         </div>
                     @else
                         <div class="py-12 text-center">
-                            <div class="mb-8">
-                                <div class="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-200">
-                                    <svg class="w-10 h-10 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                </div>
-                                <h4 class="text-2xl font-bold text-zinc-900 mb-2">Siap Memulai Aktivitas?</h4>
-                                <p class="text-zinc-500 text-sm max-w-sm mx-auto">Sistem siap mencatat kehadiran Anda. Pastikan Anda berada di area sekolah.</p>
+                            <div class="mb-6">
+                                <h4 class="text-2xl font-bold text-zinc-900 mb-2">Absensi Kehadiran</h4>
+                                <p class="text-zinc-500 text-sm max-w-sm mx-auto">Scan QR Code di bawah ini menggunakan kamera HP Anda untuk Check-In.</p>
                             </div>
 
-                            <form action="{{ route('guru.absensi.check-in') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="w-full max-w-md mx-auto py-4 bg-zinc-900 text-white rounded-xl font-bold text-lg hover:bg-black transition-all shadow-lg hover:shadow-xl active:scale-[0.99] flex items-center justify-center gap-3">
-                                    <span>CHECK IN MASUK</span>
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                </button>
-                            </form>
+                            <div class="flex justify-center mb-6">
+                                <div class="bg-white p-6 rounded-2xl shadow-lg border border-zinc-100 relative group">
+                                    <div id="qrcode-in"></div>
+                                    <div id="loading-overlay-in" class="absolute inset-0 bg-white/90 flex items-center justify-center z-10 transition-opacity duration-300">
+                                        <div class="w-10 h-10 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin"></div>
+                                    </div>
+                                    
+                                    <!-- Scan corner markers -->
+                                    <div class="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-zinc-900 rounded-tl-lg"></div>
+                                    <div class="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-zinc-900 rounded-tr-lg"></div>
+                                    <div class="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-zinc-900 rounded-bl-lg"></div>
+                                    <div class="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-zinc-900 rounded-br-lg"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="w-full max-w-md mx-auto h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                                <div id="timer-bar-in" class="h-full bg-zinc-900 w-full transition-all ease-linear duration-1000"></div>
+                            </div>
+                            <p class="mt-2 text-xs font-mono text-zinc-400">Auto-refresh setiap 10 detik</p>
                         </div>
                     @endif
                 </div>
@@ -212,7 +232,67 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+    // Configuration
+    const checkInContainer = document.getElementById('qrcode-in');
+    const checkOutContainer = document.getElementById('qrcode-out');
+    // HARDCODED NGROK URL AS PER REQUEST TO FIX CSS/LINK ISSUES
+    const ngrokBaseUrl = "https://postdiscoidal-chargeful-tera.ngrok-free.dev/absensi/scan/"; 
+    const refreshInterval = 10000;
+    
+    async function updateQR() {
+        // Determine mode based on element existence
+        const mode = checkInContainer ? 'in' : (checkOutContainer ? 'out' : null);
+        if (!mode) return;
+
+        const container = mode === 'in' ? checkInContainer : checkOutContainer;
+        const loader = document.getElementById(`loading-overlay-${mode}`);
+        const timerBar = document.getElementById(`timer-bar-${mode}`);
+
+        try {
+             // Reset timer bar animation
+             if(timerBar) {
+                timerBar.style.transition = 'none';
+                timerBar.style.width = '100%';
+                void timerBar.offsetWidth; // trigger reflow
+                timerBar.style.transition = `width ${refreshInterval}ms linear`;
+                timerBar.style.width = '0%';
+            }
+
+            const response = await fetch("{{ route('absensi.get-qr-token') }}");
+            const data = await response.json();
+            
+            if (data.token) {
+                const fullUrl = ngrokBaseUrl + data.token;
+                
+                // Clear previous
+                container.innerHTML = '';
+                
+                // Generate new
+                new QRCode(container, {
+                    text: fullUrl,
+                    width: mode === 'in' ? 200 : 150,
+                    height: mode === 'in' ? 200 : 150,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+
+                if(loader) loader.classList.add('opacity-0');
+            }
+        } catch (error) {
+            console.error('Error fetching token:', error);
+        }
+    }
+
+    // Initial call
+    document.addEventListener('DOMContentLoaded', () => {
+        updateQR();
+        setInterval(updateQR, refreshInterval);
+    });
+
+    // Clock
     setInterval(() => {
         const clockElem = document.getElementById('huge-clock');
         if (clockElem) {

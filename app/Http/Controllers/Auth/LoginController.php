@@ -38,6 +38,12 @@ class LoginController extends Controller
                 ]);
             }
 
+            // Check for pending scan redirect
+            if (session()->has('scan_redirect_token')) {
+                $token = session()->pull('scan_redirect_token');
+                return redirect('/absensi/scan-process/' . $token);
+            }
+
             return $this->redirectBasedOnRole();
         }
 

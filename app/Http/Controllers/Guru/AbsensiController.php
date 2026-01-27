@@ -24,77 +24,8 @@ class AbsensiController extends Controller
         return view('guru.absensi.index', compact('absensiHariIni', 'jamKerja'));
     }
 
-    public function checkIn(Request $request)
-    {
-        $user = auth()->user();
-        $today = today();
-        $now = Carbon::now();
+    // Manual CheckIn/CheckOut Removed - Replaced by AbsensiScanController using QR Code
 
-        // Cek apakah sudah check-in hari ini
-        $absensi = Absensi::where('user_id', $user->id)
-            ->whereDate('tanggal', $today)
-            ->first();
-
-        if ($absensi && $absensi->jam_masuk) {
-            return redirect()->back()->with('error', 'Anda sudah melakukan check-in hari ini.');
-        }
-
-        // Ambil jam kerja aktif
-        $jamKerja = JamKerja::where('is_active', true)->first();
-        $terlambat = null;
-
-        if ($jamKerja) {
-            $jamMasukKerja = Carbon::parse($today->format('Y-m-d') . ' ' . $jamKerja->jam_masuk);
-            $jamMasukKerja->addMinutes($jamKerja->toleransi_keterlambatan);
-
-            if ($now->gt($jamMasukKerja)) {
-                $terlambat = $now->diffInMinutes($jamMasukKerja->subMinutes($jamKerja->toleransi_keterlambatan));
-            }
-        }
-
-        if ($absensi) {
-            $absensi->update([
-                'jam_masuk' => $now->format('H:i:s'),
-                'status' => 'hadir',
-                'terlambat' => $terlambat,
-            ]);
-        } else {
-            Absensi::create([
-                'user_id' => $user->id,
-                'tanggal' => $today,
-                'jam_masuk' => $now->format('H:i:s'),
-                'status' => 'hadir',
-                'terlambat' => $terlambat,
-            ]);
-        }
-
-        return redirect()->back()->with('success', 'Check-in berhasil!');
-    }
-
-    public function checkOut(Request $request)
-    {
-        $user = auth()->user();
-        $today = today();
-        $now = Carbon::now();
-
-        $absensi = Absensi::where('user_id', $user->id)
-            ->whereDate('tanggal', $today)
-            ->first();
-
-        if (!$absensi || !$absensi->jam_masuk) {
-            return redirect()->back()->with('error', 'Anda belum melakukan check-in hari ini.');
-        }
-
-        if ($absensi->jam_pulang) {
-            return redirect()->back()->with('error', 'Anda sudah melakukan check-out hari ini.');
-        }
-
-        $absensi->update([
-            'jam_pulang' => $now->format('H:i:s'),
-        ]);
-
-        return redirect()->back()->with('success', 'Check-out berhasil!');
-    }
 
     public function ajukanIzin(Request $request)
     {
