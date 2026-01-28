@@ -36,7 +36,7 @@ class AbsensiController extends Controller
             });
         }
 
-        $absensi = $query->orderBy('tanggal', 'desc')->paginate(20);
+        $absensi = $query->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc')->paginate(20);
 
         return view('admin.absensi.index', compact('absensi'));
     }
@@ -70,11 +70,11 @@ class AbsensiController extends Controller
         \Illuminate\Support\Facades\Cache::put('attendance_qr_' . $token, [
             'valid' => true,
             'user_id' => $user->id
-        ], 30);
+        ], 60);
 
         return response()->json([
             'token' => $token,
-            'expires_in' => 30
+            'expires_in' => 60
         ]);
     }
 }
