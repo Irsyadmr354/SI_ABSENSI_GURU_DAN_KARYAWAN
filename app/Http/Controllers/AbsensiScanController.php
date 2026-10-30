@@ -114,7 +114,7 @@ class AbsensiScanController extends Controller
             $terlambat = null;
 
             if ($now->gt($jamMasukWithTolerance)) {
-                $terlambat = $now->diffInMinutes($jamMasukWithTolerance->subMinutes($jamKerja->toleransi_keterlambatan));
+                $terlambat = (int) $jamMasuk->diffInMinutes($now);
             }
 
             if ($absensi) {
@@ -170,6 +170,8 @@ class AbsensiScanController extends Controller
     // DEMO RESET: Allow users to reset their attendance for portfolio/testing
     public function demoReset()
     {
+        abort_if(app()->environment('production'), 404);
+
         $user = auth()->user();
         if(!$user) return redirect()->route('login');
 

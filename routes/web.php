@@ -29,10 +29,6 @@ Route::middleware('auth')->group(function() {
     Route::get('/absensi/get-qr-token', [AdminAbsensiController::class, 'getQrToken'])->name('absensi.get-qr-token');
 });
 
-// Public routes for scanning (Middleware handles auth logic inside)
-Route::get('/absensi/scan-init/{token}', [App\Http\Controllers\AbsensiScanController::class, 'initScan'])->name('absensi.scan.init');
-Route::get('/absensi/scan-process/{token}', [App\Http\Controllers\AbsensiScanController::class, 'process'])->middleware('auth')->name('absensi.scan.process');
-
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function() {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -53,8 +49,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
 });
 
-// === SCAN ABSENSI ROUTES ===       
-// 1. Init: Force Logout if needed to ensure fresh login
+// === SCAN ABSENSI ROUTES ===
+// 1. Init: force logout so the scanner always logs in with the right account
 Route::get('/absensi/scan/{token}', [\App\Http\Controllers\AbsensiScanController::class, 'scanInit'])->name('absensi.scan');
 
 // 2. Process: Protected by Auth, processes the scan after login

@@ -1,59 +1,90 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SI Absensi Guru dan Karyawan
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi absensi sekolah berbasis Laravel dengan check-in dan check-out lewat QR code, role admin, guru, dan karyawan.
 
-## About Laravel
+## Kenapa proyek ini dibuat
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sekolah butuh cara absensi yang tidak bisa diwakilkan. QR code dibuat di dashboard admin, ditampilkan di layar, lalu dipindai oleh guru atau karyawan dari HP. Setiap token hanya berlaku sekali dan terikat ke akun yang memindai, sehingga satu orang tidak bisa mengabsenkan rekannya.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Login dan registrasi dengan tiga role: admin, guru, karyawan
+- Absensi QR one-time token dengan masa berlaku pendek
+- Validasi jam masuk, toleransi keterlambatan, dan jam pulang
+- Hitung menit terlambat otomatis
+- Riwayat absensi dan pengajuan izin
+- CRUD guru, karyawan, jabatan, jam kerja, dan user
+- Export absensi ke PDF dan Excel
+- Reset absensi hari ini untuk keperluan demo (nonaktif di production)
 
-## Learning Laravel
+## Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Laravel 12, PHP 8.2+
+- MySQL atau MariaDB
+- Blade, Tailwind CSS, Vite
+- PHPUnit
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Instalasi
 
-## Laravel Sponsors
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Atur koneksi database di `.env`, lalu:
 
-### Premium Partners
+```bash
+php artisan migrate --seed
+npm install
+npm run build
+php artisan serve
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Akun demo hasil seeder:
 
-## Contributing
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@example.com | password |
+| Guru | guru1@example.com | password |
+| Karyawan | karyawan1@example.com | password |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Cek `database/seeders` untuk data terbaru.
 
-## Code of Conduct
+## Alur QR
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. Admin membuka dashboard, QR code dibuat dengan token acak dan disimpan di cache.
+2. Guru atau karyawan memindai QR, diarahkan ke `/absensi/scan/{token}`.
+3. Sistem memaksa login agar akun yang memindai jelas.
+4. Setelah login, `/absensi/scan-process/{token}` memvalidasi token, pemilik token, role, jam kerja aktif, dan jendela waktu.
+5. Scan pertama mencatat jam masuk dan menit terlambat. Scan kedua mencatat jam pulang.
 
-## Security Vulnerabilities
+## Test
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan test
+```
 
-## License
+Hasil terakhir:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+Tests: 10 passed (28 assertions)
+```
+
+Cakupan: check-in tepat waktu, check-in terlambat, check-out, token sekali pakai, token milik user lain, scan di luar jendela waktu, dan redirect dashboard per role.
+
+## Struktur
+
+```
+app/Http/Controllers/AbsensiScanController.php   alur scan QR
+app/Http/Controllers/Admin                       panel admin
+app/Models/Absensi.php                           model dan accessor keterlambatan
+routes/web.php                                   routing publik, admin, guru, karyawan
+tests/Feature/AbsensiScanTest.php                test alur scan
+```
+
+## Batasan
+
+- Reset absensi demo hanya untuk lingkungan non-production.
+- Export PDF memakai library yang butuh ekstensi PHP standar, ikuti `composer.json`.
+- Belum ada notifikasi WhatsApp atau email untuk keterlambatan.
